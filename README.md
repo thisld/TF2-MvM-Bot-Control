@@ -21,19 +21,36 @@ Embed 'block' into the bot name to stop any player from controlling it.
 (You don't need the quote marks.)
 
 As an example:
+
 TFBot
+
 {
+
   Class Sniper
+  
   name "blockAccurately Sniper"
+  
   Health 130
+  
   Skill Expert 
+  
   Attributes AlwaysCrit
+  
   WeaponRestrictions PrimaryOnly
+  
   CharacterAttributes
+  
   {
+  
     "move speed bonus"	0.0
+    
     "damage bonus"         1.0
+    
     "sniper charge per sec"     5.0
+    
   } 
+  
 }
+
+
  It can go at the beginning, middle or end and it isn't case sensitive, same for vip.
