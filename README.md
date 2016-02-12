@@ -6,7 +6,7 @@ TF2 Items - https://builds.limetech.org/?project=tf2items
 
 TF2 Atttributes - https://github.com/FlaminSarge/tf2attributes
 
-Install the above and get them working.
+Install the latest versions of the above and get them working.
 
 Compile Bot Control, drop the smx file into your plugins folder, job done.
 
