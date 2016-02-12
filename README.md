@@ -54,3 +54,5 @@ TFBot
 
 
  It can go at the beginning, middle or end and it isn't case sensitive, same for vip.
+ 
+ Also, this doesn't block the last bot in a wave or trap the end of a wave, so be sure to block the last bot in any wave because if you try to control it then the wave will end prematurely.
