@@ -23,6 +23,7 @@ Embed 'block' into the bot name to stop any player from controlling it.
 As an example:
 
 TFBot
+
 {
 
   Class Sniper
