@@ -24,6 +24,7 @@ As an example:
 
 TFBot
 {
+
   Class Sniper
   
   name "blockAccurately Sniper"
