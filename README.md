@@ -11,6 +11,7 @@ Install the above and get them working.
 Compile Bot Control, drop the smx file into your plugins folder, job done.
 
 
+
 Mission Files
 
 Embed 'vip' into the bot name and only players with custom flag 1 can control the bot.
