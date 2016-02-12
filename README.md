@@ -27,11 +27,17 @@ TFBot
 {
 
   Class Sniper
+  
   name "blockAccurately Sniper"
+  
   Health 130
-  Skill Expert 
+  
+  Skill Expert
+  
   Attributes AlwaysCrit
+  
   WeaponRestrictions PrimaryOnly
+  
   CharacterAttributes
   
   {
