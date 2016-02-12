@@ -2,7 +2,7 @@
 
 Dependencies
 
-TF2 ITems - https://builds.limetech.org/?project=tf2items
+TF2 Items - https://builds.limetech.org/?project=tf2items
 
 TF2 Atttributes - https://github.com/FlaminSarge/tf2attributes
 
