@@ -6,6 +6,8 @@ TF2 Items - https://builds.limetech.org/?project=tf2items
 
 TF2 Atttributes - https://github.com/FlaminSarge/tf2attributes
 
+TF2] 10vM (Ten Mann vs Machine) - https://forums.alliedmods.net/showthread.php?p=1819189
+
 Install the latest versions of the above and get them working.
 
 Compile Bot Control, drop the smx file into your plugins folder, job done.
