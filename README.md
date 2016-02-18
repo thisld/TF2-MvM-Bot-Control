@@ -32,25 +32,7 @@ TFBot
   
   name "blockAccurately Sniper"
   
-  Health 130
-  
-  Skill Expert
-  
-  Attributes AlwaysCrit
-  
-  WeaponRestrictions PrimaryOnly
-  
-  CharacterAttributes
-  
-  {
-  
-    "move speed bonus"	0.0
-    
-    "damage bonus"         1.0
-    
-    "sniper charge per sec"     5.0
-    
-  } 
+...
   
 }
 
