@@ -20,7 +20,6 @@ Embed 'vip' into the bot name and only players with custom flag 1 can control th
 
 Embed 'block' into the bot name to stop any player from controlling it.
 
-(You don't need the quote marks.)
 
 As an example:
 
