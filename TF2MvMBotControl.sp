@@ -76,7 +76,6 @@ new bool:wavecooldown[MAXPLAYERS+1];
 new bool:BlockShield[MAXPLAYERS+1] = true;
 new bool:BlockBackShield[MAXPLAYERS+1] = true;
 new bool:AboutToExplode[MAXPLAYERS + 1];
-
 new bool:g_bHitboxAvailable = false;
 
 
@@ -85,6 +84,9 @@ new iDeployingAnim[][2] = {{120,2},{49,49},{163,149},{100,100},{82,82},{89,89},{
 
 new iMaxDefenders;
 new iMinDefenders;
+
+new WaveEnemyCount = 0;
+new bool:FromBotDeath = false;
 
 public Plugin:myinfo =
 {
@@ -289,12 +291,18 @@ public Action:NewTarget(Handle:timer, any:iClient)
 
 	new String:iTargetName[64];
 	GetClientInfo(iTarget, "name",iTargetName,sizeof(iTargetName));
- 	if ( StrContains(iTargetName,"block",false) != -1)
+ 	if ( StrContains(iTargetName,"block",false) != -1) 
 	{
 		SetHudTextParams(-1.0, 0.4, 5.0, 255, 255, 0, 255);
 		ShowSyncHudText(iClient, gHud, "This BOT is blocked");
 		return Plugin_Continue;
-	} 
+	}
+ 	if  (WaveEnemyCount <= 1)
+	{
+		SetHudTextParams(-1.0, 0.6, 5.0, 255, 255, 0, 255);
+		ShowSyncHudText(iClient, gHud, "AutoBlock is Active");
+		return Plugin_Continue;
+	}
  	if (( StrContains(iTargetName,"vip",false) != -1) && !(GetUserFlagBits(iClient) & PREMIUMFLAG))
 	{
 		SetHudTextParams(-1.0, 0.4, 5.0, 255, 255, 0, 255);
@@ -359,7 +367,7 @@ public Action:MedicHook(iClient, const String:cmd[], args)
 			{
 				new String:iTargetName[64];
 				GetClientInfo(iTarget, "name",iTargetName,sizeof(iTargetName));
-				if ( StrContains(iTargetName,"block",false) != -1)
+				if (( StrContains(iTargetName,"block",false) != -1) || (WaveEnemyCount <= 1))
 				{
 					return Plugin_Stop;
 				}
@@ -629,8 +637,9 @@ public Action:MedicHook(iClient, const String:cmd[], args)
 //					PrintToChat (iClient, "Att: %i val: %d", charattriblist[j], charattriblistvalues[j]);
 					TF2Attrib_SetByDefIndex(iClient, charattriblist[j], charattriblistvalues[j]);
 				}
-					
-				KickClient(iTarget);
+				FromBotDeath = true;
+				CreateTimer(1.0, ResetFromBotDeath, iClient);
+				ForcePlayerSuicide(iTarget);
 				TeleportEntity(iClient, fPlayerOrigin, fPlayerAngles, NULL_VECTOR);
 
 				SetEntData(iClient, FindDataMapOffs(iClient, "m_iMaxHealth"), iTargetHealth, 4, true);
@@ -685,7 +694,11 @@ public Action:MedicHook(iClient, const String:cmd[], args)
 public Action:PlayerDeath(Handle:hEvent, const String:name[], bool:dontBroadcast)
 {
 	new iClient = GetClientOfUserId(GetEventInt(hEvent, "userid"));
-	
+	if (IsFakeClient(iClient))
+	{
+		FromBotDeath = true;
+		CreateTimer(1.0, ResetFromBotDeath, iClient);
+	}
 	if ((!bBcEnabled) || !IsValidClient(iClient))
 		return Plugin_Continue;
 		
@@ -730,7 +743,6 @@ public Action:PlayerDeath(Handle:hEvent, const String:name[], bool:dontBroadcast
 //		ChangeClientTeam( iClient, 1 );
 		return Plugin_Handled;
 	}
-	
 	return Plugin_Continue;
 }  
 
@@ -748,7 +760,10 @@ public Action:tDestroyRagdoll(Handle:timer, any:iClient)
 		AcceptEntityInput(iRagdoll, "kill");
 	}
 }
-
+public Action:ResetFromBotDeath(Handle:timer, any:iClient)
+{
+	FromBotDeath = false;
+}
 public Action:tMoveToSpec(Handle:timer, any:iClient)
 {
 	if ( !IsValidClient( iClient ))
@@ -864,6 +879,7 @@ public WaveFailComplete(Handle:event, const String:name[], bool:dontBroadcast)
 		wavecooldown[i] = false;
 	}
 }
+
 public Action:WaveCompleted(Handle:event, const String:name[], bool:dontBroadcast)
 {
 	for( new i = 1; i <= MaxClients; i++ )
@@ -879,6 +895,8 @@ public Action:WaveCompleted(Handle:event, const String:name[], bool:dontBroadcas
 }
 public BeginWave(Handle:event, const String:name[], bool:dontBroadcast)
 {
+	new ObjectiveEntity = FindEntityByClassname(-1, "tf_objective_resource");
+	WaveEnemyCount = GetEntProp(ObjectiveEntity, Prop_Send, "m_nMannVsMachineWaveEnemyCount");
 	for( new i = 1; i <= MaxClients; i++ )
 	{
 		if ( IsValidClient( i ) && !IsFakeClient( i )   )
@@ -1121,6 +1139,10 @@ public OnEntityCreated( iEntity, const String:strClassname[] )
 	{
 		CreateTimer(0.1, tHandleWeapons, iEntity); // Without a timer, the server crashes
 	}
+	else if (StrContains(strClassname, "item_currencypack") >= 0)
+	{
+		SDKHook(iEntity, SDKHook_Spawn, OnCurrencySpawned);
+	}
  	else if (StrEqual(strClassname, "tf_wearable", false))
 	{
 		SDKHook(iEntity, SDKHook_Spawn, OnBlockedPropItemSpawned);
@@ -1302,11 +1324,11 @@ public Action:TEHook_TFExplosion(const String:te_name[], const Players[], numCli
 public Action:NormalSoundHook( iClients[64], &iNumClients, String:strSound[PLATFORM_MAX_PATH], &iEntity, &iChannel, &Float:flVolume, &iLevel, &iPitch, &iFlags )
 {
 	//if( StrContains( strSound, "vo/mvm_", false ) != -1 ) PrintToServer( "%s %d %f %d %d %d", strSound, iChannel, flVolume, iLevel, iPitch, iFlags );
-	
 	if( !IsMvM() || !IsValidRobot(iEntity) )
 		return Plugin_Continue;
 	
 	new TFClassType:iClass = TF2_GetPlayerClass( iEntity );
+
 	if( StrContains( strSound, "announcer", false ) != -1 )
 		return Plugin_Continue;
 	else if( StrContains( strSound, "player/footsteps/", false ) != -1 )
@@ -1742,7 +1764,22 @@ public OnPostInventoryApplication( Handle:hEvent, const String:strEventName[], b
 	CreateTimer(0.1, tMoveToSpec, iClient);
 		
 }
+public Action:OnCurrencySpawned(entity)
+{
+	if (!IsValidEntity(entity) || !IsMvM())
+		return Plugin_Continue;
 
+	new owner = GetEntPropEnt(entity, Prop_Send, "m_hOwnerEntity");
+	if (owner < 1 || owner > MaxClients || !IsClientInGame(owner))
+		return Plugin_Continue;
+		
+	if (FromBotDeath == true)
+	{
+		WaveEnemyCount = WaveEnemyCount - 1;
+		}
+	FromBotDeath = false;
+	return Plugin_Continue;
+}
 public Action:OnBlockedPropItemSpawned(entity)
 {
 	if (!IsValidEntity(entity) || !IsMvM())
